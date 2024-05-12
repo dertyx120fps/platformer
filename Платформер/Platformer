@@ -1,0 +1,175 @@
+from pygame import *
+from random import *
+from time import time as timer
+
+WIN_WIDTH = 1200
+WIN_HEIGHT = 800
+
+timergameplay = 0
+
+o = 200
+
+not_txt = 0
+
+score_l = 0
+score_r = 0
+
+font.init()
+font1 = font.SysFont('Arial', 80)
+font2 = font.SysFont('Arial', 10)
+font3 = font.SysFont('Arial', 200)
+
+t_score = font3.render('', True, (0,0,0))
+# end_txt = font1.render('', True, (0,0,0))
+# l_score = font1.render('Очки:' + str(score_l), True, (0,0,0))
+# r_score = font1.render('Очки:'+ str(score_r), True, (0,0,0))
+
+FPS = 90
+
+tab = 0
+
+UP = False
+DOWN = False
+
+pos_jump = 650
+pos_jump_wall = 650
+
+class GameSprite(sprite.Sprite):
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed1, player_speed2):
+        super().__init__()
+        self.image = back = transform.scale(image.load(player_image), (size_x, size_y))
+        self.speed_x = player_speed1
+        self.speed_y = player_speed2
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.rect.y = player_y
+    
+    def reset(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Player(GameSprite):
+    def update_l(self):
+        global UP
+        global DOWN
+        global pos_jump
+
+        keys = key.get_pressed()
+        if keys[K_a] and self.rect.x > 0:
+            self.rect.x -= self.speed_x
+        if keys[K_d] and self.rect.x < WIN_WIDTH - 180:
+            self.rect.x += self.speed_x
+        if keys[K_w] and UP == False and DOWN == False:
+            UP = True
+            self.speed_y = 25
+            pos_jump = self.rect.y
+            
+
+        if self.speed_y <= 2:
+            UP = False
+            self.speed_y = 2
+
+
+        if UP == True:
+            self.rect.y -= self.speed_y
+            self.speed_y *= 0.9
+                        
+        if DOWN == True:
+            self.rect.y += self.speed_y
+            self.speed_y *= 1.1
+
+        if (self.rect.y >= WIN_HEIGHT - 150) or UP:
+            DOWN = False
+
+        if not UP and (self.rect.y <= pos_jump) and (self.rect.y <= pos_jump_wall) and not DOWN: 
+            DOWN = True
+            self.speed_y = 2
+
+        if self.rect.y >= WIN_HEIGHT - 150:
+            self.rect.y = WIN_HEIGHT - 150
+
+
+    
+
+window = display.set_mode((WIN_WIDTH, WIN_HEIGHT))
+
+window.fill((150,200,250))
+
+player_l = Player('slime.png', 20, WIN_HEIGHT - 200, 80, 60, 10, 5)
+
+wall1 = GameSprite('racket.png', 100, 700, 200, 20, 10, 5)
+wall2 = GameSprite('racket.png', 400, 500, 200, 20, 10, 5)
+wall3 = GameSprite('racket.png', 100, 300, 200, 20, 10, 5)
+wall4 = GameSprite('racket.png', 700, 200, 200, 20, 10, 5)
+wall5 = GameSprite('racket.png', 1000, 100, 200, 20, 10, 5)
+
+clock = time.Clock()
+
+game = True
+
+while game:
+    window.fill((150,200,250))
+    for e in event.get():
+        if e.type == QUIT:
+            game = False 
+
+    player_l.update_l()
+    player_l.reset()
+    wall1.reset()
+    wall2.reset()
+    wall3.reset()
+    wall4.reset()
+    wall5.reset()
+
+    if player_l.rect.colliderect(wall1):
+        pos_jump_wall = wall1.rect.y
+        pos_jump = wall3.rect.y
+        DOWN = False
+    if player_l.rect.colliderect(wall2):
+        pos_jump_wall = wall2.rect.y
+        pos_jump = wall3.rect.y
+        DOWN = False
+    if player_l.rect.colliderect(wall3):
+        pos_jump_wall = wall3.rect.y
+        pos_jump = wall3.rect.y
+        DOWN = False
+    if player_l.rect.colliderect(wall4):
+        pos_jump_wall = wall4.rect.y
+        pos_jump = wall4.rect.y
+        DOWN = False
+    if player_l.rect.colliderect(wall5):
+        pos_jump_wall = wall5.rect.y
+        pos_jump = wall5.rect.y
+        DOWN = False
+    else:
+        pos_jump_wall = 650
+        pos_jump = 650
+
+    # if wall1.rect.y <= player_l.rect.y >= wall1.rect.y + 40 and wall1.rect.x + 200 > player_l.rect.x > wall1.rect.x:
+    #     UP = False
+    #     pos_jump_wall = 650
+    #     pos_jump = 650
+    # if wall2.rect.y <= player_l.rect.y >= wall2.rect.y + 40 and wall2.rect.x + 200 > player_l.rect.x > wall2.rect.x:
+    #     UP = False
+    #     pos_jump_wall = 650
+    #     pos_jump = 650
+    # if wall3.rect.y <= player_l.rect.y >= wall3.rect.y + 40 and wall3.rect.x + 200 > player_l.rect.x > wall3.rect.x:
+    #     UP = False
+    #     pos_jump_wall = 650
+    #     pos_jump = 650
+    # if wall4.rect.y <= player_l.rect.y >= wall4.rect.y + 40 and wall4.rect.x + 200 > player_l.rect.x > wall4.rect.x:
+    #     UP = False
+    #     pos_jump_wall = 650
+    #     pos_jump = 650
+    # if wall5.rect.y <= player_l.rect.y >= wall5.rect.y + 40 and wall5.rect.x + 200 > player_l.rect.x > wall5.rect.x:
+    #     UP = False
+    #     pos_jump_wall = 650
+    #     pos_jump = 650
+
+    if player_l.rect.y <= -100:
+        t_score = font3.render('Победа!', True, (0,0,0))
+
+
+    window.blit(t_score,(100, 100))
+
+    display.update()
+    clock.tick(FPS)
